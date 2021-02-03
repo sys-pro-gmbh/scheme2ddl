@@ -1,5 +1,7 @@
 package com.googlecode.scheme2ddl;
 
+import com.googlecode.scheme2ddl.domain.UserObject;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -19,7 +21,7 @@ public class DDLFormatter {
 
     static String newline = "\r\n"; //may be use "\n"
 
-    public String formatDDL(String ddl) {
+    public String formatDDL(UserObject userObject, String ddl) {
         if (noFormat)
             return ddl;
 
@@ -37,6 +39,10 @@ public class DDLFormatter {
         ddl = ddl.replaceAll(newline + "COMMENT ", newline + newline + "   COMMENT ");
         ddl = ddl.replaceAll(newline + "  CREATE ", newline + "CREATE ");
         ddl = ddl.replaceAll(newline + "  ALTER ", newline + "ALTER ");
+        ddl = ddl.replaceAll("\t", "    ");
+        ddl = ddl.replaceAll("\r\n  USING INDEX  ", "  USING INDEX ");
+        ddl = ddl.replaceAll("\""+ userObject.getSchema()+"\".", "");
+        ddl = ddl.replaceAll("   \\(    \"", "   \\(\r\n    \"");
         return ddl;
     }
 
@@ -78,16 +84,18 @@ public class DDLFormatter {
      * @param dependentDLL -string with list of 'create index' statements
      * @return  string with sorted alphabetically 'create index' statements
      */
-    public String sortIndexesInDDL(String dependentDLL) {
-        if (noFormat || !sortCreateIndexStatements){
+    public String sortIndexesInDDL(UserObject userObject, String dependentDLL) {
+        if (noFormat || !sortCreateIndexStatements || dependentDLL.isEmpty()){
             return dependentDLL;
         }
         String[] parts = dependentDLL.split("(?=CREATE INDEX)|(?=CREATE UNIQUE INDEX)|(?=CREATE BITMAP INDEX)");
         List<String> list = new ArrayList<String>();
+
+        String exclude = "\"" + userObject.getSchema() + "\".\"SYS_";
         for (String part : parts) {
-            if (part != null && !part.trim().isEmpty()) {
-                list.add(part.trim());
-            }
+            if (part == null || part.trim().isEmpty() || part.contains(exclude))
+                continue;
+            list.add(part.trim());
         }
         Collections.sort(list);
         StringBuilder s = new StringBuilder();

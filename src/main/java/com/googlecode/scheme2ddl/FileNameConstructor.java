@@ -8,7 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 
-import javax.annotation.Resource;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -40,7 +40,6 @@ public class FileNameConstructor implements InitializingBean {
 
     private boolean needToReplaceWindowsReservedFileNames = false;
 
-    @Resource
     private Map<String,String> windowsReservedNamesReplacements;
 
     /**
@@ -167,6 +166,10 @@ public class FileNameConstructor implements InitializingBean {
 	
 	public void setCombinePackage(boolean combinePackage) {
         this.combinePackage = combinePackage;
+    }
+
+    public void setWindowsReservedNamesReplacements(Map<String,String> windowsReservedNamesReplacements)  {
+        this.windowsReservedNamesReplacements = windowsReservedNamesReplacements;
     }
 
     public void setNeedToReplaceWindowsReservedFileNames(boolean needToReplaceWindowsReservedFileNames) {

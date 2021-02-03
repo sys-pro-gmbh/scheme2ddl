@@ -67,13 +67,13 @@ public class UserObjectProcessor implements ItemProcessor<UserObject, UserObject
     private String map2Ddl(UserObject userObject) throws CannotGetDDLException, NonSkippableException {
         try {
             if (userObject.getType().equals("DBMS JOB")) {
-                return ddlFormatter.formatDDL(userObjectDao.findDbmsJobDDL(userObject.getName()));
+                return ddlFormatter.formatDDL(userObject, userObjectDao.findDbmsJobDDL(userObject.getName()));
             }
             if (userObject.getType().equals("PUBLIC DATABASE LINK")) {
-                return ddlFormatter.formatDDL(userObjectDao.findDDLInPublicScheme(map2TypeForDBMS(userObject.getType()), userObject.getName()));
+                return ddlFormatter.formatDDL(userObject, userObjectDao.findDDLInPublicScheme(map2TypeForDBMS(userObject.getType()), userObject.getName()));
             }
 			if (userObject.getType().equals("REFRESH_GROUP")) {
-                return ddlFormatter.formatDDL(userObjectDao.findRefGroupDDL(userObject.getType(), userObject.getName()));
+                return ddlFormatter.formatDDL(userObject, userObjectDao.findRefGroupDDL(userObject.getType(), userObject.getName()));
             }
             StringBuilder res = new StringBuilder(userObjectDao.findPrimaryDDL(map2TypeForDBMS(userObject.getType()), userObject.getName()));
             if (userObject.getType().equals("SEQUENCE") && replaceSequenceValues) {
@@ -84,12 +84,12 @@ public class UserObjectProcessor implements ItemProcessor<UserObject, UserObject
                 for (String dependedType : dependedTypes) {
                     String dependentDLL = userObjectDao.findDependentDLLByTypeName(dependedType, userObject.getName());
                     if (dependedType.equals("INDEX")){
-                        dependentDLL = ddlFormatter.sortIndexesInDDL(dependentDLL);
+                        dependentDLL = ddlFormatter.sortIndexesInDDL(userObject, dependentDLL);
                     }
                     res.append(dependentDLL);
                 }
             }
-            return ddlFormatter.formatDDL(res.toString());
+            return ddlFormatter.formatDDL(userObject, res.toString());
         } catch (Exception e) {
             log.warn(String.format("Cannot get DDL for object %s with error message %s", userObject, e.getMessage()));
             if (stopOnWarning) {
