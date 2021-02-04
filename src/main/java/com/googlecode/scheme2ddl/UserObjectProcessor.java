@@ -82,7 +82,14 @@ public class UserObjectProcessor implements ItemProcessor<UserObject, UserObject
             Set<String> dependedTypes = dependencies.get(userObject.getType());
             if (dependedTypes != null) {
                 for (String dependedType : dependedTypes) {
-                    String dependentDLL = userObjectDao.findDependentDLLByTypeName(dependedType, userObject.getName());
+                    String dependentDLL = "";
+                    if (dependedType.equals("SYNONYM"))
+                        try { // we check if there is ddl for a public synonym, this will throw an exception if there is not
+                            dependentDLL = userObjectDao.findDDLInPublicScheme(dependedType, userObject.getName());
+                        } catch (Exception e) { /* do nothing */ }
+                    else
+                        dependentDLL = userObjectDao.findDependentDLLByTypeName(dependedType, userObject.getName());
+
                     if (dependedType.equals("INDEX")){
                         dependentDLL = ddlFormatter.sortIndexesInDDL(userObject, dependentDLL);
                     }
